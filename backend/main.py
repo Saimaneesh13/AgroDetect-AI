@@ -8,7 +8,7 @@ import io
 import json
 import os
 
-from treatment import get_treatment
+from backend.treatment import get_treatment
 from tensorflow.keras.applications.efficientnet import preprocess_input
 
 # =============================
@@ -28,8 +28,12 @@ app.add_middleware(
 # =============================
 # PATHS
 # =============================
-MODEL_PATH = "model/plant_disease_model_best.keras"
-CLASS_INDEX_PATH = "model/class_indices.json"
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+MODEL_PATH = os.path.join(BASE_DIR, "model", "plant_disease_model_best.keras")
+CLASS_INDEX_PATH = os.path.join(BASE_DIR, "model", "class_indices.json")
 
 # =============================
 # LOAD MODEL
