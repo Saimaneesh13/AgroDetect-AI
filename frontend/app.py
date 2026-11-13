@@ -18,13 +18,15 @@ def get_backend_url() -> str:
     env_url = os.getenv("BACKEND_URL")
     if env_url:
         return env_url.rstrip("/") + "/predict"
+
     try:
         secret_url = st.secrets.get("BACKEND_URL")
         if secret_url:
             return str(secret_url).rstrip("/") + "/predict"
     except Exception:
         pass
-    return "http://127.0.0.1:8000/predict"
+
+    return "https://agrodetect-ai-backend.onrender.com/predict"
 
 
 BACKEND_URL = get_backend_url()
