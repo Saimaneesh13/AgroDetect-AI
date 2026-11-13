@@ -8,7 +8,12 @@ import io
 import json
 import os
 
-from backend.treatment import get_treatment
+# Works both on Render (from root) and locally (inside /backend)
+try:
+    from backend.treatment import get_treatment
+except ModuleNotFoundError:
+    from treatment import get_treatment
+
 from tensorflow.keras.applications.efficientnet import preprocess_input
 
 # =============================
@@ -28,8 +33,6 @@ app.add_middleware(
 # =============================
 # PATHS
 # =============================
-import os
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 MODEL_PATH = os.path.join(BASE_DIR, "model", "plant_disease_model_best.keras")
@@ -38,17 +41,17 @@ CLASS_INDEX_PATH = os.path.join(BASE_DIR, "model", "class_indices.json")
 # =============================
 # LOAD MODEL
 # =============================
-print("🔄 Loading model...")
+print("Loading model...")
 
 model = tf.keras.models.load_model(MODEL_PATH)
 
 with open(CLASS_INDEX_PATH, "r") as f:
     class_indices = json.load(f)
 
-# reverse mapping
-idx_to_class = {v: k for k, v in class_indices.items()}
+# Reverse mapping (cast to int to ensure lookup always matches np.argmax)
+idx_to_class = {int(v): k for k, v in class_indices.items()}
 
-print("✅ Model loaded successfully")
+print("Model loaded successfully")
 
 IMG_SIZE = 224
 
@@ -84,8 +87,8 @@ async def predict(file: UploadFile = File(...)):
         # preprocess
         img_array = prepare_image(image)
 
-        # prediction
-        preds = model.predict(img_array)[0]
+        # prediction (verbose=0 prevents log spam on cloud servers)
+        preds = model.predict(img_array, verbose=0)[0]
         class_idx = int(np.argmax(preds))
         confidence = float(preds[class_idx])
 
@@ -107,7 +110,8 @@ async def predict(file: UploadFile = File(...)):
 
 
 # =============================
-# RUN (optional)
+# RUN (Local & Cloud Ready)
 # =============================
 if __name__ == "__main__":
-    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

@@ -22,7 +22,7 @@ with open(CLASS_JSON_PATH, "r") as f:
 # reverse mapping: index → class name
 idx_to_class = {v: k for k, v in class_indices.items()}
 
-print("✅ Model and class indices loaded")
+print("Model and class indices loaded")
 
 
 # ======================
